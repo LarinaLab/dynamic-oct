@@ -1,1 +1,1 @@
-__all__ = ['DOCTData', 'io', 'visual', 'preprocessing', 'tools']
+__all__ = ['DOCTData', 'preprocessing', 'readwrite', 'tools', 'visual']

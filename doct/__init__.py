@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Dynamic optical coherence tomography analysis in python.
 """
@@ -15,3 +16,6 @@ __all__ = [
     'preprocessing',
     'analysis',
 ]
+=======
+__all__ = ['DOCTData', 'preprocessing', 'readwrite', 'tools', 'visual']
+>>>>>>> 86a192d37bc07dbe87526a32b9863c0545ad57f2

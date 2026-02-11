@@ -99,7 +99,7 @@ def read_tiff_stack(path: str) -> DOCTData:
     
     with imageio.get_reader(path) as reader:
         frames = []
-        n_frames = reader.count_frames()
+        n_frames = reader.get_length()
         for frame in tqdm(reader, desc="Loading TIFF frames", 
                          unit="frame", total=n_frames):
             frames.append(frame)

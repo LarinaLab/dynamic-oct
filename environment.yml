@@ -1,0 +1,21 @@
+name: dynamic-oct
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - ipykernel
+  - numpy
+  - scipy
+  - matplotlib
+  - imageio
+  - natsort
+  - tqdm
+  - joblib
+  - tifffile
+  - scikit-image
+  - pillow
+  - plotly
+  - opencv
+  - pip:
+      - -e .

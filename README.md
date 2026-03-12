@@ -1,28 +1,76 @@
 # dynamic-oct
 
-A scalable and object-oriented analysis toolkit for analyzing dynamic OCT data.
+A scalable, object-oriented, and modular analysis toolkit for dynamic OCT data.
 
-Dynamic OCT leverages signal intensity fluctuations to find unique signatures of cellular activities and tissues. This repository contains code to compute dynamic OCT results and can be found in the `doct/` folder.
+Dynamic OCT leverages signal intensity fluctuations to identify unique signatures of cellular activity and tissue-specific dynamics. This repository provides a local Python package, `doct`, for loading time-series OCT data, preprocessing it, running published dynamic OCT analyses, and storing outputs in a shared `DOCTData` container.
 
-## Coming Soon
+## Installation
 
-Tutorials to use this framework on your own data will be pushed to this repository soon! The preferred data type is **T×H×W** or **TxWxH**, but volumetric "blocks" could be concatenated together, and `apply_windowed()` in `tools.py` could be applied to process these data. Current 4D data from the Larina Lab that have been processed using `apply_windowed()` were acquired with a slow volumetric scanning protocol, where we collected ~128 frames per pixel of resolution (i.e., 10,000 B-scans covering ~95µm).
+This project is intended to be installed locally.
 
-## Implemented Methods
+### Conda setup
 
-The following published methods have been implemented:
+```bash
+conda env create -f environment.yml
+conda activate dynamic-oct
+```
+
+The environment file installs the package in editable mode with `pip install -e .`, so local code changes are immediately available inside the environment.
+
+### Alternative: existing environment
+
+If you already have a Python or conda environment you want to use, go to it and run:
+
+```bash
+pip install -e .
+```
+
+## Basic usage
+
+```python
+# Import statements for full functionality
+import doct
+from doct import DOCTData
+from doct import readwrite, preprocessing, visual
+from doct.analysis import core
+from doct.analysis import motility as motility_module
+from doct.analysis import neural_gas, aLIV_swift
+
+ddata = read_tiffs("path/to/tiff_folder") # Assuming log scaled data
+liv(ddata)
+show_heatmap(ddata.results["liv"])
+```
+
+## Package layout
+
+- `doct/DOCTData.py`: initializes the shared container object for raw data, metadata, and analysis results
+- `doct/readwrite.py`: TIFF import/export helpers
+- `doct/preprocessing.py`: masking, cropping, scaling, and trimming
+- `doct/visual.py`: visualization helpers
+- `doct/analysis/`: dynamic OCT analysis methods, including all that is in the Implemented methods section
+- `notebooks/tutorial.ipynb`: interactive usage notebook
+
+## Implemented methods
+
 - Standard deviation
 - Logarithmic intensity variance (LIV)
 - OCT correlation decay speed
-- RGB frequency binning 
-- Neural gas clustering for RGB frequency binning [2]
-- Authentic LIV (aLIV) and Swiftness [1,2]
-- Motility metrics ($M$, $\alpha$, $R^2$) [2]
+- RGB frequency binning
+- Neural gas clustering for RGB frequency binning
+- Authentic LIV (aLIV) and swiftness
+- Motility metrics ($M$, $\alpha$, $R^2$)
 
+## Notes on data shape
 
-### Original code repositories which were adapted to fit into this object-oriented framework
+The expected input shape is `(T, H, W)` for a time series of 2D OCT frames. Windowed processing can be used to analyze larger concatenated acquisitions.
+
+## Source material
+
+The package adapts and refactors methods from:
 
 1. https://github.com/ComputationalOpticsGroup/COG-dynamic-OCT-contrast-generation-library
-
 2. https://github.com/noahheldt/A-guide-to-dynamic-OCT-data-analysis
 
+## Contact
+**Joesph Beller** - joesph.beller@bcm.edu \
+Please use the [GitHub Issues](https://github.com/LarinaLab/dynamic-oct/issues) page for questions, bug reports, and feature requests.

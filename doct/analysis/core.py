@@ -1,14 +1,13 @@
-import DOCTData
+from ..DOCTData import DOCTData
 import numpy as np
 import scipy
 import cv2
-from visual import generate_RgbImage
 from tqdm import tqdm
 from scipy.optimize import curve_fit
 from scipy.ndimage import uniform_filter
-from preprocessing import trim
+from ..preprocessing import trim
 from joblib import Parallel, delayed
-from rgb_by_ngc_cpu import rgb_by_neural_gas_b_is_dc_hist
+from .neural_gas import rgb_by_neural_gas_b_is_dc_hist
 
 def apply_windowed(DOCTData, method, window_size, step_size, inplace=True, n_jobs=1, **method_kwargs):
     """
@@ -293,6 +292,8 @@ def ocds(DOCTData, frame_rate: float, tau: tuple = (1, 50), inplace=True):
     """
     if not inplace:
         DOCTData = DOCTData.copy(deep=True)
+
+    DOCTData.meta['frame_rate'] = frame_rate
     
     I = DOCTData.data.reshape(DOCTData.n_frames, -1) # (T, H*W)
     
@@ -315,7 +316,7 @@ def ocds(DOCTData, frame_rate: float, tau: tuple = (1, 50), inplace=True):
     rho_A = np.stack(rho_A, axis=1) # (2T-1, H*W)
     
     # Extract positive lags in tau range and fit slope
-    time_lags = np.arange(tau[0], tau[1]) / DOCTData.meta['frame_rate']
+    time_lags = np.arange(tau[0], tau[1]) / frame_rate
     autocorr_slice = rho_A[rho_A.shape[0]//2+tau[0]:rho_A.shape[0]//2+tau[1], :] # Taking corresponding positive lag values only
     
     # polyfit returns [slope, intercept], we want slope (first coefficient)

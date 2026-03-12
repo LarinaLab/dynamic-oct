@@ -1,4 +1,12 @@
-def alpha_r2(DOCTData, inplace=True, n_jobs=1) -> DOCTData:
+from ..DOCTData import DOCTData
+import numpy as np
+from scipy.optimize import curve_fit
+from scipy.ndimage import uniform_filter
+from tqdm import tqdm
+from joblib import Parallel, delayed
+
+
+def alpha_r2(doct_obj: DOCTData, frame_rate: float, inplace=True, n_jobs=1) -> DOCTData:
     """
     Calculate alpha and R² metrics per pixel based on power spectrum fitting.
     
@@ -7,12 +15,14 @@ def alpha_r2(DOCTData, inplace=True, n_jobs=1) -> DOCTData:
     
     Parameters
     ----------
-    DOCTData : DOCTData
+    doct_obj : DOCTData
         Input DOCTData object with linear intensity data
     frame_rate : float
         Frames per second (used for frequency scaling)
     smooth_box_size : int, default 5
         Size of 3D box filter for smoothing power spectra (odd number recommended)
+    frame_rate : float
+        Frames per second used for frequency scaling.
     inplace : bool, default True
         If True, modify DOCTData directly. If False, return a new DOCTData.
     n_jobs : int, default -1
@@ -39,13 +49,15 @@ def alpha_r2(DOCTData, inplace=True, n_jobs=1) -> DOCTData:
     https://github.com/noahheldt/A-guide-to-dynamic-OCT-data-analysis
     """
     if not inplace:
-        DOCTData = DOCTData.copy(deep=True)
+        doct_obj = doct_obj.copy(deep=True)
 
-    I = DOCTData.data / np.mean(DOCTData.data, axis=0) - 1  # Power fluctuation correction
+    doct_obj.meta['frame_rate'] = frame_rate
+
+    I = doct_obj.data / np.mean(doct_obj.data, axis=0) - 1  # Power fluctuation correction
 
     fft = 2 * np.abs(np.fft.fft(I, axis=0))
     fft = fft[1:(fft.shape[0]//2), :, :]  # (freq, H, W) - keep 3D
-    f = np.fft.fftfreq(I.shape[0], d=1/DOCTData.meta['frame_rate'])[1:(I.shape[0]//2)]
+    f = np.fft.fftfreq(I.shape[0], d=1/frame_rate)[1:(I.shape[0]//2)]
     
     # Smooth power spectra with 3x3 spatial box filter (paper notes it is averaging over 8 neighboring pixels).
     # The matlab code in the repo uses a 3D box filter, which is not represented in the paper.
@@ -96,12 +108,12 @@ def alpha_r2(DOCTData, inplace=True, n_jobs=1) -> DOCTData:
         r2_flat[pixel] = r2
     
     # Reshape results back to 2D
-    DOCTData.results['alpha'] = alpha_flat.reshape(DOCTData.data.shape[1], DOCTData.data.shape[2])
-    DOCTData.results['r2'] = r2_flat.reshape(DOCTData.data.shape[1], DOCTData.data.shape[2])
+    doct_obj.results['alpha'] = alpha_flat.reshape(doct_obj.data.shape[1], doct_obj.data.shape[2])
+    doct_obj.results['r2'] = r2_flat.reshape(doct_obj.data.shape[1], doct_obj.data.shape[2])
 
-    return DOCTData
+    return doct_obj
 
-def motility(DOCTData, frame_rate: float, inplace=True) -> DOCTData:
+def motility(doct_obj: DOCTData, frame_rate: float, inplace=True) -> DOCTData:
     """
     Calculate Monfort's motility metric per pixel.
     
@@ -109,7 +121,7 @@ def motility(DOCTData, frame_rate: float, inplace=True) -> DOCTData:
     
     Parameters
     ----------
-    DOCTData : DOCTData
+    doct_obj : DOCTData
         Input DOCTData object
     frame_rate : float
         Frames per second (for metadata)
@@ -126,9 +138,11 @@ def motility(DOCTData, frame_rate: float, inplace=True) -> DOCTData:
     https://github.com/noahheldt/A-guide-to-dynamic-OCT-data-analysis/blob/main/motility_based_metrics/doct_monfort_motility
     """
     if not inplace:
-        DOCTData = DOCTData.copy(deep=True)
+        doct_obj = doct_obj.copy(deep=True)
+
+    doct_obj.meta['frame_rate'] = frame_rate
     
-    I = DOCTData.data  # (T, H, W)
+    I = doct_obj.data  # (T, H, W)
     
     # Mean product of consecutive frames
     Ga = np.mean(I[:-1] * I[1:], axis=0)
@@ -139,6 +153,6 @@ def motility(DOCTData, frame_rate: float, inplace=True) -> DOCTData:
     # Monfort's motility metric
     motility = np.abs(np.sqrt(Ga - mean_I**2) / mean_I)
     
-    DOCTData.results["motility"] = motility
+    doct_obj.results["motility"] = motility
     
-    return DOCTData
+    return doct_obj

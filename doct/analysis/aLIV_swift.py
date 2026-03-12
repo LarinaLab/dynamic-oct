@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from tqdm import tqdm
 from scipy.optimize import curve_fit
-from DOCTData import DOCTData
+from ..DOCTData import DOCTData
 
 """
 All code in this file is slightly adapted from Code from R. Morishita et.al., arXiv 2412.09351 (2024)

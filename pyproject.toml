@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dynamic-oct"
+version = "0.1.0"
+description = "Modular dynamic OCT analysis toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "imageio",
+    "joblib",
+    "matplotlib",
+    "natsort",
+    "numpy",
+    "opencv-python",
+    "pillow",
+    "plotly",
+    "scikit-image",
+    "scipy",
+    "tifffile",
+    "tqdm",
+]
+
+[tool.setuptools]
+packages = ["doct", "doct.analysis"]
